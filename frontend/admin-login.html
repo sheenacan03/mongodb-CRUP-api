@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Everglow Gem - Admin Login</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        /* --- Root and Global Styles --- */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            /* Admin Theme Colors - Dark, serious, and professional */
+            --admin-primary: #34495e; /* Dark Slate Blue */
+            --admin-secondary: #e74c3c; /* Alert Red */
+            --admin-bg: #2c3e50; /* Darker background */
+            --white: #ffffff;
+            --light-text: #ecf0f1;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            background-color: var(--admin-bg);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            color: var(--light-text);
+        }
+
+        /* --- Login Card Container --- */
+        .login-container {
+            width: 90%;
+            max-width: 400px;
+            background-color: var(--white);
+            padding: 40px;
+            border-radius: 10px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
+            text-align: center;
+            color: var(--admin-primary);
+        }
+
+        .login-header {
+            margin-bottom: 30px;
+        }
+
+        .login-header h2 {
+            font-size: 2em;
+            color: var(--admin-primary);
+            margin-bottom: 5px;
+        }
+
+        .login-header p {
+            font-style: italic;
+            font-size: 0.9em;
+            color: #7f8c8d;
+        }
+
+        /* --- Form Styling --- */
+        .input-group {
+            margin-bottom: 20px;
+            text-align: left;
+        }
+
+        .input-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: bold;
+        }
+
+        .input-group input {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #bdc3c7;
+            border-radius: 5px;
+            font-size: 1em;
+            transition: border-color 0.3s;
+        }
+
+        .input-group input:focus {
+            border-color: var(--admin-primary);
+            outline: none;
+        }
+
+        /* --- Submit Button --- */
+        .login-btn {
+            width: 100%;
+            padding: 15px;
+            background-color: var(--admin-secondary);
+            color: var(--white);
+            border: none;
+            border-radius: 5px;
+            font-size: 1.1em;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        .login-btn:hover {
+            background-color: #c0392b; /* Darker Red */
+        }
+
+        .back-to-store {
+            margin-top: 20px;
+            font-size: 0.9em;
+        }
+
+        .back-to-store a {
+            color: var(--admin-secondary);
+            text-decoration: none;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div class="login-container">
+        <div class="login-header">
+            <h2><i class="fas fa-user-shield"></i> Admin Panel Access</h2>
+            <p>Authorized personnel only. Product management interface.</p>
+        </div>
+
+        <form id="admin-login-form">
+            <div class="input-group">
+                <label for="admin-username">Username:</label>
+                <input type="text" id="admin-username" name="admin-username" required>
+            </div>
+            
+            <div class="input-group">
+                <label for="admin-password">Password:</label>
+                <input type="password" id="admin-password" name="admin-password" required>
+            </div>
+
+            <button type="submit" class="login-btn">
+                Log In & Access Controls
+            </button>
+        </form>
+
+        <p id="login-message" style="color: var(--admin-secondary); margin-top: 15px; font-weight: bold; display: none;">
+            Invalid credentials. Try again.
+        </p>
+        
+        <div class="back-to-store">
+            <p class="text-muted" style="color: #6c757d; margin-bottom: 5px;">Not an admin?</p>
+            <a href="signup.html" style="font-size: 1em;">
+                <i class="fas fa-user-plus me-1"></i> Create a Customer Account
+            </a>
+        </div>
+        
+        <div class="back-to-store" style="margin-top: 5px;">
+            <a href="index.html">← Back to Everglow Gem Store</a>
+        </div>
+        
+    </div>
+
+    <script>
+    // --- ADMIN LOGIN LOGIC ---
+    const API_URL = "http://localhost:5000/api/admin/login"; 
+
+    document.getElementById('admin-login-form').addEventListener('submit', async function(event) {
+        event.preventDefault(); 
+        
+        // Note: The form uses 'admin-username' which we are treating as 'email' for the API
+        const email = document.getElementById('admin-username').value;
+        const password = document.getElementById('admin-password').value;
+        const messageDisplay = document.getElementById('login-message');
+
+        messageDisplay.style.display = 'none'; // Clear previous messages
+
+        try {
+            const res = await fetch(API_URL, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                // The API expects 'email' and 'password' in the body
+                body: JSON.stringify({ email, password })
+            });
+
+            if (res.ok) {
+                // Successful Login (API verified role: 'admin')
+                
+                // Set the admin flag in localStorage to activate Edit Mode on index.html
+                localStorage.setItem('isAdminLoggedIn', 'true');
+
+                alert("Admin login successful! Redirecting to product management...");
+                window.location.href = 'index.html'; 
+
+            } else {
+                // Failed Login (401 Unauthorized or other error)
+                const errorData = await res.json();
+                
+                // Display specific error message from the server or a default one
+                messageDisplay.textContent = errorData.message || 'Invalid credentials. Access Denied.';
+                messageDisplay.style.display = 'block';
+                document.getElementById('admin-password').value = ''; // Clear password for security
+            }
+        } catch (error) {
+            console.error("Network Error during login:", error);
+            messageDisplay.textContent = 'Network error. Could not connect to the server.';
+            messageDisplay.style.display = 'block';
+        }
+    });
+</script>
+</body>
+</html>

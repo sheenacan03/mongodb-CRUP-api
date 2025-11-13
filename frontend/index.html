@@ -1,0 +1,450 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Everglow Gem - Featured Jewelry</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    
+    <style>
+        /* --- Root and Global Styles --- */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary-color: #ff4747; /* AliExpress Red/Orange */
+            --secondary-color: #ff6600; /* Darker orange for emphasis */
+            --text-color: #333;
+            --light-bg: #f8f8f8;
+            --white: #ffffff;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            background-color: var(--light-bg);
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+
+        /* --- Header Styles (Minimized Padding) --- */
+        .main-header {
+            background-color: var(--white);
+            border-bottom: 1px solid #ddd;
+            padding: 8px 30px; 
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .store-name a {
+            font-size: 1.6em;
+            font-weight: bold;
+            color: var(--primary-color); 
+            text-decoration: none;
+            text-transform: uppercase;
+        }
+
+        /* --- Search Bar Container --- */
+        .search-container {
+            flex-grow: 1;
+            max-width: 550px;
+            display: flex;
+            border: 2px solid var(--primary-color);
+            border-radius: 20px;
+            overflow: hidden;
+            height: 38px;
+        }
+        
+        #search-input {
+            flex-grow: 1;
+            padding: 0 15px;
+            border: none;
+            outline: none;
+            font-size: 0.95em;
+        }
+
+        #search-btn {
+            background-color: var(--primary-color);
+            color: var(--white);
+            border: none;
+            padding: 0 18px;
+            cursor: pointer;
+            font-size: 0.9em;
+            transition: background-color 0.2s;
+        }
+
+        .main-nav {
+            display: none; 
+        }
+
+        /* --- User Actions & Icons --- */
+        .user-actions {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .action-icon-group {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            cursor: pointer;
+            color: var(--text-color);
+            text-decoration: none;
+            font-size: 0.8em;
+            position: relative;
+        }
+        
+        .action-icon-group i {
+            font-size: 1.4em;
+            margin-bottom: 2px;
+            color: #555;
+        }
+
+        .cart-badge {
+            position: absolute;
+            top: -5px;
+            right: -10px;
+            background-color: var(--secondary-color);
+            color: var(--white);
+            border-radius: 50%;
+            padding: 2px 6px;
+            font-size: 0.7em;
+            font-weight: bold;
+            line-height: 1;
+            min-width: 18px;
+            text-align: center;
+        }
+        
+        .action-btn {
+            padding: 5px 10px;
+            border: 2px solid var(--primary-color);
+            border-radius: 15px;
+            cursor: pointer;
+            font-size: 0.8em;
+            transition: background-color 0.3s, color 0.3s;
+            background-color: var(--white); 
+            color: var(--primary-color); 
+            font-weight: bold;
+        }
+
+        .action-btn:hover {
+            background-color: var(--primary-color); 
+            color: var(--white);
+        }
+        
+        /* --- Main Content & Products (Minimized Vertical Space) --- */
+        .main-content {
+            flex-grow: 1;
+            padding: 25px 20px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        .section-title {
+            text-align: center;
+            margin-bottom: 20px;
+            font-size: 1.8em;
+            color: var(--text-color);
+        }
+
+        /* --- KEY CHANGE HERE: Smaller minmax value for 4 columns --- */
+        .product-grid {
+            display: grid;
+            /* Changed minmax(250px, 1fr) to minmax(200px, 1fr) */
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px; 
+        }
+        /* ---------------------------------------------------------- */
+
+        .product-card {
+            background-color: var(--white);
+            border: 1px solid #eee;
+            border-radius: 8px;
+            padding: 12px;
+            text-align: center;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+            transition: transform 0.3s;
+        }
+
+        .product-image {
+            width: 100%;
+            height: 180px;
+            margin-bottom: 8px;
+            border-radius: 4px;
+            object-fit: cover; 
+            background-color: #f0f0f0;
+        }
+
+        .product-title {
+            font-size: 1em;
+            color: var(--text-color);
+            margin-bottom: 3px;
+            line-height: 1.3;
+        }
+
+        .product-price {
+            font-size: 1.1em;
+            font-weight: bold;
+            color: var(--primary-color);
+            margin-bottom: 10px;
+        }
+
+        .add-to-cart-btn {
+            background-color: var(--secondary-color);
+            color: white;
+            padding: 8px 15px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            width: 100%;
+            transition: background-color 0.2s;
+            font-size: 0.9em;
+        }
+        .add-to-cart-btn:hover {
+            background-color: #e05c00;
+        }
+
+        /* --- Footer Styles --- */
+        .main-footer {
+            background-color: #333;
+            color: #f0f0f0;
+            padding: 30px 20px 20px;
+            margin-top: 30px;
+        }
+
+        .footer-content {
+            display: flex;
+            justify-content: space-between;
+            max-width: 1200px;
+            margin: 0 auto;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+
+        .footer-column {
+            flex: 1;
+            min-width: 180px;
+        }
+
+        .footer-column a {
+            color: #ccc;
+            text-decoration: none;
+        }
+
+        .footer-bottom {
+            text-align: center;
+            padding-top: 15px;
+            margin-top: 20px;
+            border-top: 1px solid #555;
+            font-size: 0.8em;
+            color: #aaa;
+        }
+    </style>
+</head>
+<body>
+    <header class="main-header">
+        <div class="store-name">
+            <a href="index.html">**EVERGLOW GEM**</a>
+        </div>
+        
+        <div class="search-container">
+            <input type="text" id="search-input" placeholder="Search for products, categories, or brands...">
+            <button id="search-btn"><i class="fas fa-search"></i></button>
+        </div>
+        
+        <nav class="main-nav">
+            <ul>
+                <li><a href="index.html">Home</a></li>
+                <li><a href="new-products.html">New Products</a></li>
+                <li><a href="categories.html">Categories</a></li>
+            </ul>
+        </nav>
+        
+        <div class="user-actions">
+            <a href="signup.html" class="action-icon-group">
+                <i class="fas fa-user-circle"></i>
+                <span>Account</span>
+            </a>
+
+            <div id="cart-icon-group" class="action-icon-group">
+                <i class="fas fa-shopping-cart"></i>
+                <span id="cart-count" class="cart-badge">0</span>
+                <span>Cart</span>
+            </div>
+
+            <button class="action-btn" id="signup-btn">Sign Up</button>
+            <button class="action-btn" id="login-btn">Log In</button>
+        </div>
+    </header>
+
+    <main class="main-content">
+        <h2 class="section-title">✨ Featured Jewelry Collection ✨</h2>
+        
+        <div class="product-grid">
+            <div class="product-card">
+                <img src="images/ring.jpg" alt="Classic Diamond Ring" class="product-image">
+                <h3 class="product-title">The 'Aurora' Solitaire Ring</h3>
+                <p class="product-price">₱54,999.00</p>
+                <button class="add-to-cart-btn" onclick="addToCart('The Aurora Solitaire Ring')">Add to Cart</button>
+            </div>
+
+            <div class="product-card">
+                <img src="images/necklace.jpeg" alt="Elegant Pearl Necklace" class="product-image">
+                <h3 class="product-title">Tahitian Black Pearl Drop Necklace</h3>
+                <p class="product-price">₱8,200.00</p>
+                <button class="add-to-cart-btn" onclick="addToCart('Tahitian Black Pearl Drop Necklace')">Add to Cart</button>
+            </div>
+
+            <div class="product-card">
+                <img src="images/bracelet.jpg" alt="Dainty Gold Bracelet" class="product-image">
+                <h3 class="product-title">Minimalist 14K Gold Link Bracelet</h3>
+                <p class="product-price">₱2,550.00</p>
+                <button class="add-to-cart-btn" onclick="addToCart('Minimalist 14K Gold Link Bracelet')">Add to Cart</button>
+            </div>
+
+            <div class="product-card">
+                <img src="images/earring.jpg" alt="Sapphire Stud Earrings" class="product-image">
+                <h3 class="product-title">Royal Blue Sapphire Halo Studs</h3>
+                <p class="product-price">₱12,100.00</p>
+                <button class="add-to-cart-btn" onclick="addToCart('Royal Blue Sapphire Halo Studs')">Add to Cart</button>
+            </div>
+
+            <div class="product-card">
+                <img src="images/locket.jpg" alt="Vintage Silver Locket" class="product-image">
+                <h3 class="product-title">Antique Engraved Photo Locket</h3>
+                <p class="product-price">₱4,150.00</p>
+                <button class="add-to-cart-btn" onclick="addToCart('Antique Engraved Photo Locket')">Add to Cart</button>
+            </div>
+
+            <div class="product-card">
+                <img src="images/pendant.jpg" alt="Heart Ruby Pendant" class="product-image">
+                <h3 class="product-title">Crimson Ruby Heart Pendant</h3>
+                <p class="product-price">₱17,300.00</p>
+                <button class="add-to-cart-btn" onclick="addToCart('Crimson Ruby Heart Pendant')">Add to Cart</button>
+            </div>
+
+            <div class="product-card">
+                <img src="images/bangle-set.jpg" alt="Engraved Bangle Set" class="product-image">
+                <h3 class="product-title">Personalized Copper Bangle Set</h3>
+                <p class="product-price">₱4,900.00</p>
+                <button class="add-to-cart-btn" onclick="addToCart('Personalized Copper Bangle Set')">Add to Cart</button>
+            </div>
+
+            <div class="product-card">
+                <img src="images/minimalist-cuff.jpg" alt="Minimalist Ear Cuff" class="product-image">
+                <h3 class="product-title">Celestial Star Chain Ear Cuff</h3>
+                <p class="product-price">₱1,375.00</p>
+                <button class="add-to-cart-btn" onclick="addToCart('Celestial Star Chain Ear Cuff')">Add to Cart</button>
+            </div>
+        </div>
+    </main>
+
+    <footer class="main-footer">
+        <div class="footer-content">
+            <div class="footer-column">
+                <h4>About Everglow Gem</h4>
+                <p>We are dedicated to providing the finest, ethically sourced jewelry. Quality and customer satisfaction are our highest priorities.</p>
+                <p>Est. 2023</p>
+            </div>
+            
+            <div class="footer-column">
+                <h4>Customer Service</h4>
+                <ul>
+                    <li><a href="#">Contact Us</a></li>
+                    <li><a href="#">Shipping & Returns</a></li>
+                    <li><a href="#">FAQ</a></li>
+                    <li><a href="#">Gift Cards</a></li>
+                </ul>
+            </div>
+            
+            <div class="footer-column">
+                <h4>Company Info</h4>
+                <ul>
+                    <li><a href="#">Our Story</a></li>
+                    <li><a href="#">Careers</a></li>
+                    <li><a href="#">Privacy Policy</a></li>
+                    <li><a href="#">Terms of Service</a></li>
+                </ul>
+            </div>
+
+            <div class="footer-column">
+                <h4>Contact & Social</h4>
+                <p>Email: <a href="mailto:info@storename.com">info@storename.com</a></p>
+                <p>Phone: (555) 123-4567</p>
+                <p>Follow us on:</p>
+                <ul>
+                    <li><a href="#">Facebook</a></li>
+                    <li><a href="#">Instagram</a></li>
+                    <li><a href="#">Pinterest</a></li>
+                </ul>
+            </div>
+
+        </div>
+
+        <div class="footer-bottom">
+            &copy; 2025 Everglow Gem. All rights reserved.
+        </div>
+    </footer>
+    
+    <script>
+        // --- State Variables ---
+        let isLoggedIn = false; 
+        let cartItemCount = 0; 
+
+        // --- Element References ---
+        const signUpButton = document.getElementById('signup-btn');
+        const logInButton = document.getElementById('login-btn');
+        const cartCountDisplay = document.getElementById('cart-count');
+        const searchButton = document.getElementById('search-btn');
+
+        // --- Event Listeners ---
+        
+        // 1. Sign Up/Log In (Both redirect to signup.html)
+        signUpButton.addEventListener('click', function() {
+            window.location.href = 'signup.html';
+        });
+
+        logInButton.addEventListener('click', function() {
+            window.location.href = 'signup.html'; 
+        });
+        
+        // 2. Search Button (Simulated functionality)
+        searchButton.addEventListener('click', function() {
+            const query = document.getElementById('search-input').value;
+            alert(`Searching for: ${query}`);
+        });
+
+        // 3. Cart Icon Click
+        document.getElementById('cart-icon-group').addEventListener('click', function() {
+            window.location.href = 'cart.html'; 
+        });
+
+        // 4. Add to Cart Functionality (Updated to increment counter)
+        function addToCart(productName) {
+            if (isLoggedIn) {
+                // If logged in, increment the cart counter
+                cartItemCount++;
+                cartCountDisplay.textContent = cartItemCount;
+                alert(productName + ' has been added to your shopping cart!');
+            } else {
+                // If NOT logged in, prompt the user
+                const confirmLogin = confirm(
+                    "You must be logged in to add items to your cart. Click OK to proceed to Sign Up/Log In."
+                );
+
+                if (confirmLogin) {
+                    // Redirect to the signup page if the user confirms
+                    window.location.href = 'signup.html';
+                }
+            }
+        }
+    </script>
+
+</body>
+</html>
