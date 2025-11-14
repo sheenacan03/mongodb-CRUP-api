@@ -151,11 +151,11 @@
                 showStatus(`Welcome, ${name}! Your account has been created. Redirecting...`, 'success');
                 signupForm.reset();
                 
-                // Set 'isLoggedIn' flag and redirect after a short delay
-                localStorage.setItem('isLoggedIn', 'true');
-                setTimeout(() => {
-                    window.location.href = 'index.html'; // Go back to the main store page
-                }, 2000);
+               // Set 'isLoggedIn' flag and redirect after a short delay
+               localStorage.setItem('isLoggedIn', 'true');
+               setTimeout(() => {
+               window.location.href = 'products.html'; // NEW REDIRECT TARGET
+               }, 2000);
                 
             } else {
                 // Handle API error messages (like duplicate email)

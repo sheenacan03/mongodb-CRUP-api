@@ -185,7 +185,8 @@
                 localStorage.setItem('isAdminLoggedIn', 'true');
 
                 alert("Admin login successful! Redirecting to product management...");
-                window.location.href = 'index.html'; 
+               // Change this line:
+                window.location.href = 'admin-dashboard.html'; 
 
             } else {
                 // Failed Login (401 Unauthorized or other error)

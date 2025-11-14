@@ -4,7 +4,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Everglow Gem - Featured Jewelry</title>
+    
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     
     <style>
         /* --- Root and Global Styles --- */
@@ -15,8 +18,8 @@
         }
 
         :root {
-            --primary-color: #ff4747; /* AliExpress Red/Orange */
-            --secondary-color: #ff6600; /* Darker orange for emphasis */
+            --primary-color: #ff4747; /* Primary Red */
+            --secondary-color: #ff6600; /* Emphasis Orange */
             --text-color: #333;
             --light-bg: #f8f8f8;
             --white: #ffffff;
@@ -30,7 +33,7 @@
             min-height: 100vh;
         }
 
-        /* --- Header Styles (Minimized Padding) --- */
+        /* --- Header Styles --- */
         .main-header {
             background-color: var(--white);
             border-bottom: 1px solid #ddd;
@@ -82,10 +85,10 @@
             display: none; 
         }
 
-        /* --- User Actions & Icons --- */
-        .user-actions {
+        /* --- User Actions & Icons (Updated to use flex gap) --- */
+        .header-actions {
             display: flex;
-            gap: 10px;
+            gap: 15px; /* Increase gap for cleaner look */
             align-items: center;
         }
 
@@ -98,6 +101,7 @@
             text-decoration: none;
             font-size: 0.8em;
             position: relative;
+            min-width: 50px; /* Ensure spacing */
         }
         
         .action-icon-group i {
@@ -121,24 +125,9 @@
             text-align: center;
         }
         
-        .action-btn {
-            padding: 5px 10px;
-            border: 2px solid var(--primary-color);
-            border-radius: 15px;
-            cursor: pointer;
-            font-size: 0.8em;
-            transition: background-color 0.3s, color 0.3s;
-            background-color: var(--white); 
-            color: var(--primary-color); 
-            font-weight: bold;
-        }
+        /* The CSS for the old, redundant buttons is now removed */
 
-        .action-btn:hover {
-            background-color: var(--primary-color); 
-            color: var(--white);
-        }
-        
-        /* --- Main Content & Products (Minimized Vertical Space) --- */
+        /* --- Main Content & Products --- */
         .main-content {
             flex-grow: 1;
             padding: 25px 20px;
@@ -153,14 +142,11 @@
             color: var(--text-color);
         }
 
-        /* --- KEY CHANGE HERE: Smaller minmax value for 4 columns --- */
         .product-grid {
             display: grid;
-            /* Changed minmax(250px, 1fr) to minmax(200px, 1fr) */
             grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
             gap: 20px; 
         }
-        /* ---------------------------------------------------------- */
 
         .product-card {
             background-color: var(--white);
@@ -210,7 +196,7 @@
             background-color: #e05c00;
         }
 
-        /* --- Footer Styles --- */
+        /* --- Footer Styles --- (Unchanged) */
         .main-footer {
             background-color: #333;
             color: #f0f0f0;
@@ -259,28 +245,30 @@
         </div>
         
         <nav class="main-nav">
-            <ul>
-                <li><a href="index.html">Home</a></li>
-                <li><a href="new-products.html">New Products</a></li>
-                <li><a href="categories.html">Categories</a></li>
-            </ul>
-        </nav>
+            </nav>
         
-        <div class="user-actions">
-            <a href="signup.html" class="action-icon-group">
-                <i class="fas fa-user-circle"></i>
-                <span>Account</span>
+        <div class="header-actions">
+            <div class="dropdown">
+                <button class="btn btn-outline-dark" type="button" id="account-dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
+                    <i class="fas fa-user"></i> Account
+                </button>
+                
+                <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="account-dropdown-toggle" id="account-dropdown-menu">
+                    <li><a class="dropdown-item" href="signup.html"><i class="fas fa-sign-in-alt me-2"></i> Sign In / Register</a></li>
+                </ul>
+            </div>
+            
+            <a href="admin-dashboard.html" class="btn btn-sm btn-danger ms-2 d-none" id="admin-dashboard-btn">
+                <i class="fas fa-user-shield"></i> Admin
             </a>
-
+            
             <div id="cart-icon-group" class="action-icon-group">
                 <i class="fas fa-shopping-cart"></i>
                 <span id="cart-count" class="cart-badge">0</span>
                 <span>Cart</span>
             </div>
 
-            <button class="action-btn" id="signup-btn">Sign Up</button>
-            <button class="action-btn" id="login-btn">Log In</button>
-        </div>
+            </div>
     </header>
 
     <main class="main-content">
@@ -293,49 +281,42 @@
                 <p class="product-price">₱54,999.00</p>
                 <button class="add-to-cart-btn" onclick="addToCart('The Aurora Solitaire Ring')">Add to Cart</button>
             </div>
-
             <div class="product-card">
                 <img src="images/necklace.jpeg" alt="Elegant Pearl Necklace" class="product-image">
                 <h3 class="product-title">Tahitian Black Pearl Drop Necklace</h3>
                 <p class="product-price">₱8,200.00</p>
                 <button class="add-to-cart-btn" onclick="addToCart('Tahitian Black Pearl Drop Necklace')">Add to Cart</button>
             </div>
-
             <div class="product-card">
                 <img src="images/bracelet.jpg" alt="Dainty Gold Bracelet" class="product-image">
                 <h3 class="product-title">Minimalist 14K Gold Link Bracelet</h3>
                 <p class="product-price">₱2,550.00</p>
                 <button class="add-to-cart-btn" onclick="addToCart('Minimalist 14K Gold Link Bracelet')">Add to Cart</button>
             </div>
-
             <div class="product-card">
                 <img src="images/earring.jpg" alt="Sapphire Stud Earrings" class="product-image">
                 <h3 class="product-title">Royal Blue Sapphire Halo Studs</h3>
                 <p class="product-price">₱12,100.00</p>
                 <button class="add-to-cart-btn" onclick="addToCart('Royal Blue Sapphire Halo Studs')">Add to Cart</button>
             </div>
-
             <div class="product-card">
                 <img src="images/locket.jpg" alt="Vintage Silver Locket" class="product-image">
                 <h3 class="product-title">Antique Engraved Photo Locket</h3>
                 <p class="product-price">₱4,150.00</p>
                 <button class="add-to-cart-btn" onclick="addToCart('Antique Engraved Photo Locket')">Add to Cart</button>
             </div>
-
             <div class="product-card">
                 <img src="images/pendant.jpg" alt="Heart Ruby Pendant" class="product-image">
                 <h3 class="product-title">Crimson Ruby Heart Pendant</h3>
                 <p class="product-price">₱17,300.00</p>
                 <button class="add-to-cart-btn" onclick="addToCart('Crimson Ruby Heart Pendant')">Add to Cart</button>
             </div>
-
             <div class="product-card">
                 <img src="images/bangle-set.jpg" alt="Engraved Bangle Set" class="product-image">
                 <h3 class="product-title">Personalized Copper Bangle Set</h3>
                 <p class="product-price">₱4,900.00</p>
                 <button class="add-to-cart-btn" onclick="addToCart('Personalized Copper Bangle Set')">Add to Cart</button>
             </div>
-
             <div class="product-card">
                 <img src="images/minimalist-cuff.jpg" alt="Minimalist Ear Cuff" class="product-image">
                 <h3 class="product-title">Celestial Star Chain Ear Cuff</h3>
@@ -384,7 +365,6 @@
                     <li><a href="#">Pinterest</a></li>
                 </ul>
             </div>
-
         </div>
 
         <div class="footer-bottom">
@@ -392,45 +372,86 @@
         </div>
     </footer>
     
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
     <script>
-        // --- State Variables ---
-        let isLoggedIn = false; 
-        let cartItemCount = 0; 
+        // --- State Variables: Load from Local Storage ---
+        // This makes the state persistent across page reloads.
+        let isLoggedIn = localStorage.getItem('isLoggedIn') === 'true'; 
+        let isAdminLoggedIn = localStorage.getItem('isAdminLoggedIn') === 'true';
+        // Get cart count from storage or default to 0
+        let cartItemCount = parseInt(localStorage.getItem('cartItemCount') || 0); 
 
         // --- Element References ---
-        const signUpButton = document.getElementById('signup-btn');
-        const logInButton = document.getElementById('login-btn');
         const cartCountDisplay = document.getElementById('cart-count');
         const searchButton = document.getElementById('search-btn');
-
-        // --- Event Listeners ---
         
-        // 1. Sign Up/Log In (Both redirect to signup.html)
-        signUpButton.addEventListener('click', function() {
-            window.location.href = 'signup.html';
-        });
+        // Account Dropdown Elements
+        const accountDropdownMenu = document.getElementById('account-dropdown-menu');
+        const adminBtn = document.getElementById('admin-dashboard-btn');
 
-        logInButton.addEventListener('click', function() {
-            window.location.href = 'signup.html'; 
-        });
+        // --- Dynamic Header Logic ---
+
+        function renderAccountMenu() {
+            accountDropdownMenu.innerHTML = ''; // Clear existing items
+            
+            if (isLoggedIn) {
+                // --- Logged-In User Menu ---
+                accountDropdownMenu.innerHTML += `
+                    <li><h6 class="dropdown-header">Welcome!</h6></li>
+                    <li><a class="dropdown-item" href="account-profile.html"><i class="fas fa-user-circle me-2"></i> My Profile</a></li>
+                    <li><a class="dropdown-item" href="orders.html"><i class="fas fa-box me-2"></i> My Orders</a></li>
+                    <li><hr class="dropdown-divider"></li>
+                    <li><a class="dropdown-item text-danger" href="#" id="logout-link"><i class="fas fa-sign-out-alt me-2"></i> Logout</a></li>
+                `;
+                // Setup Logout Listener AFTER creating the element
+                document.getElementById('logout-link').addEventListener('click', handleLogout);
+
+            } else {
+                // --- Logged-Out Menu ---
+                accountDropdownMenu.innerHTML += `
+                    <li><a class="dropdown-item" href="signup.html">
+                        <i class="fas fa-sign-in-alt me-2"></i> Sign In / Register
+                    </a></li>
+                    <li><hr class="dropdown-divider"></li>
+                    <li><a class="dropdown-item text-muted" href="admin-login.html">Admin Login</a></li>
+                `;
+            }
+        }
+
+        function handleLogout(e) {
+            e.preventDefault();
+            // Clear all relevant session status keys
+            localStorage.removeItem('isLoggedIn');
+            localStorage.removeItem('isAdminLoggedIn'); 
+            alert("You have been successfully logged out. Shine bright!");
+            
+            // Reload the page to update the navigation bar state
+            window.location.reload(); 
+        }
+
+        function renderAdminButton() {
+            if (isAdminLoggedIn) {
+                adminBtn.classList.remove('d-none');
+            } else {
+                adminBtn.classList.add('d-none');
+            }
+        }
+
+        // --- Cart and Product Logic ---
         
-        // 2. Search Button (Simulated functionality)
-        searchButton.addEventListener('click', function() {
-            const query = document.getElementById('search-input').value;
-            alert(`Searching for: ${query}`);
-        });
+        // Updates the cart count on the icon
+        function updateCartDisplay() {
+            cartCountDisplay.textContent = cartItemCount;
+            localStorage.setItem('cartItemCount', cartItemCount);
+        }
 
-        // 3. Cart Icon Click
-        document.getElementById('cart-icon-group').addEventListener('click', function() {
-            window.location.href = 'cart.html'; 
-        });
-
-        // 4. Add to Cart Functionality (Updated to increment counter)
+        // 4. Add to Cart Functionality 
         function addToCart(productName) {
             if (isLoggedIn) {
-                // If logged in, increment the cart counter
+                // If logged in, increment the cart counter and update storage
                 cartItemCount++;
-                cartCountDisplay.textContent = cartItemCount;
+                updateCartDisplay();
                 alert(productName + ' has been added to your shopping cart!');
             } else {
                 // If NOT logged in, prompt the user
@@ -439,11 +460,32 @@
                 );
 
                 if (confirmLogin) {
-                    // Redirect to the signup page if the user confirms
                     window.location.href = 'signup.html';
                 }
             }
         }
+
+        // --- Event Listeners and Initialisation ---
+
+        // 1. Search Button 
+        searchButton.addEventListener('click', function() {
+            const query = document.getElementById('search-input').value;
+            alert(`Simulated Search: ${query}`);
+        });
+
+        // 2. Cart Icon Click
+        document.getElementById('cart-icon-group').addEventListener('click', function() {
+            window.location.href = 'cart.html'; 
+        });
+
+        // Set the global function for use in onclick handlers
+        window.addToCart = addToCart;
+
+        // Initialize the page elements
+        updateCartDisplay();
+        renderAccountMenu();
+        renderAdminButton();
+
     </script>
 
 </body>
