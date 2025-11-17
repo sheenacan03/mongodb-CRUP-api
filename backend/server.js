@@ -9,7 +9,7 @@ const PORT = process.env.PORT || 5000; 
 
 // --- Middleware Setup ---
 // FIX 2: Explicitly set CORS to only allow the live frontend domain
-const allowedOrigin = 'https://mongodb-crup-api.onrender.com';
+const allowedOrigin = 'https://sheen.onrender.com';
 const corsOptions = {
     origin: allowedOrigin,
     methods: ['GET', 'POST', 'PUT', 'DELETE'],
