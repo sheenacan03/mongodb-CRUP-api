@@ -216,7 +216,7 @@ app.put("/api/products/:productId/stock", async (req, res) => {
 
 // ⭐ FIX: Updated logic to use 'quantityChange' as sent by the frontend
 // 10. POST /api/cart - Add a product to the user's cart or update quantity
-app.post("/api/cart", async (req, res) => {
+app.post("/api/cartitems", async (req, res) => {
     try {
         // Frontend sends quantityChange, NOT a static quantity
         const { userId, productId, quantityChange } = req.body; 
@@ -257,7 +257,7 @@ app.post("/api/cart", async (req, res) => {
 });
 
 // 11. GET /api/cart/:userId - Get the entire cart for a specific user
-app.get("/api/cart/:userId", async (req, res) => {
+app.get("/api/cartitems/:userId", async (req, res) => {
     try {
         const cartItems = await CartItem.find({ userId: req.params.userId })
             .populate('productId'); 
@@ -281,7 +281,7 @@ app.get("/api/cart/:userId", async (req, res) => {
 
 // ⭐ FIX: ADDED NEW ROUTE to fully remove an item by ProductId and UserId
 // This is required for your `deleteItem` function in the frontend
-app.delete("/api/cart/fullremove/:userId/:productId", async (req, res) => {
+app.delete("/api/cartitems/fullremove/:userId/:productId", async (req, res) => {
     try {
         const { userId, productId } = req.params;
         
@@ -306,7 +306,7 @@ app.delete("/api/cart/fullremove/:userId/:productId", async (req, res) => {
 
 
 // 14. DELETE /api/cart/clear/:userId - Clear all items from a user's cart (Used for checkout)
-app.delete("/api/cart/:userId", async (req, res) => {
+app.delete("/api/cartitems/:userId", async (req, res) => {
     try {
         const result = await CartItem.deleteMany({ userId: req.params.userId });
         res.status(200).json({ message: `Cleared ${result.deletedCount} items from cart.`, result });
