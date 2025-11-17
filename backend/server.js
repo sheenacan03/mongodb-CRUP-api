@@ -74,7 +74,7 @@ const CartItem = mongoose.model("CartItem", CartItemSchema);
 // --- User Routes (3 Routes) ---
 
 // 1. POST /api/users/register - Register a new user
-app.post("/api/users/register", async (req, res) => {
+app.post("/api/register", async (req, res) => {
     try {
         const { name, email, password, role } = req.body;
         // Basic check for existing user
@@ -90,7 +90,7 @@ app.post("/api/users/register", async (req, res) => {
 });
 
 // 2. POST /api/users/login - User login (basic simulation)
-app.post("/api/users/login", async (req, res) => {
+app.post("/api/login", async (req, res) => {
     try {
         const { email, password } = req.body;
         // Basic check, use bcrypt in production!
@@ -326,6 +326,14 @@ app.get("/api/cart/total/:userId", async (req, res) => {
     } catch (error) {
         res.status(500).json({ message: "Error calculating cart total", error: error.message });
     }
+});
+// --- In server.js (at the very end) ---
+// 404 Not Found JSON Fallback
+app.use((req, res, next) => {
+    res.status(404).json({ 
+        message: `API endpoint not found for: ${req.originalUrl}`,
+        status: 404 
+    });
 });
 
 
