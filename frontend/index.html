@@ -262,12 +262,11 @@
                 <i class="fas fa-user-shield"></i> Admin
             </a>
             
-            <div id="cart-icon-group" class="action-icon-group">
+           <a href="cart.html" id="cart-icon-group" class="action-icon-group">
                 <i class="fas fa-shopping-cart"></i>
                 <span id="cart-count" class="cart-badge">0</span>
                 <span>Cart</span>
-            </div>
-
+            </a>
             </div>
     </header>
 
@@ -396,11 +395,12 @@
             accountDropdownMenu.innerHTML = ''; // Clear existing items
             
             if (isLoggedIn) {
-                // --- Logged-In User Menu ---
+                // --- Logged-In User Menu (Same as before) ---
                 accountDropdownMenu.innerHTML += `
                     <li><h6 class="dropdown-header">Welcome!</h6></li>
                     <li><a class="dropdown-item" href="account-profile.html"><i class="fas fa-user-circle me-2"></i> My Profile</a></li>
                     <li><a class="dropdown-item" href="orders.html"><i class="fas fa-box me-2"></i> My Orders</a></li>
+                    ${isAdminLoggedIn ? `<li><a class="dropdown-item" href="admin-dashboard.html"><i class="fas fa-user-shield me-2"></i> Admin Dashboard</a></li>` : ''}
                     <li><hr class="dropdown-divider"></li>
                     <li><a class="dropdown-item text-danger" href="#" id="logout-link"><i class="fas fa-sign-out-alt me-2"></i> Logout</a></li>
                 `;
@@ -408,10 +408,11 @@
                 document.getElementById('logout-link').addEventListener('click', handleLogout);
 
             } else {
-                // --- Logged-Out Menu ---
+                // --- Logged-Out Menu: Now separates regular sign-in and Admin login ---
                 accountDropdownMenu.innerHTML += `
+                    <li><h6 class="dropdown-header">Hello, Guest!</h6></li>
                     <li><a class="dropdown-item" href="signup.html">
-                        <i class="fas fa-sign-in-alt me-2"></i> Sign In / Register
+                        <i class="fas fa-user-plus me-2"></i> Sign In / Register
                     </a></li>
                     <li><hr class="dropdown-divider"></li>
                     <li><a class="dropdown-item text-muted" href="admin-login.html">Admin Login</a></li>
@@ -474,9 +475,22 @@
         });
 
         // 2. Cart Icon Click
-        document.getElementById('cart-icon-group').addEventListener('click', function() {
-            window.location.href = 'cart.html'; 
-        });
+document.getElementById('cart-icon-group').addEventListener('click', function(e) {
+    if (isLoggedIn) {
+        // If logged in, proceed to cart page
+        window.location.href = 'cart.html'; 
+    } else {
+        // If NOT logged in, prevent default action (like following the href)
+        e.preventDefault(); 
+        const confirmLogin = confirm(
+            "You must be logged in to view your cart. Click OK to proceed to Sign Up/Log In."
+        );
+
+        if (confirmLogin) {
+            window.location.href = 'signup.html';
+        }
+    }
+});
 
         // Set the global function for use in onclick handlers
         window.addToCart = addToCart;

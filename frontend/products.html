@@ -30,7 +30,7 @@
             min-height: 100vh;
         }
 
-        /* --- Header/Nav (Simplified for internal page) --- */
+        /* --- Header/Nav --- */
         .main-header {
             background-color: var(--white);
             border-bottom: 1px solid #ddd;
@@ -38,7 +38,7 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            width: 100%; /* Important for header within product-area */
+            width: 100%;
         }
         .store-name a {
             font-size: 1.6em;
@@ -47,21 +47,19 @@
             text-decoration: none;
             text-transform: uppercase;
         }
-        /* Hide search and user icons for a simpler shopping view */
         .header-actions {
             display: none; 
         }
 
-        /* --- Main Layout --- */
+        /* --- Main Layout & Products Grid --- */
         .main-container {
             display: flex;
             flex-grow: 1;
         }
 
-        /* --- Products Grid --- */
         .product-area {
-            flex: 3; /* Takes up 3/4 of the space */
-            padding: 0; /* Removed padding to wrap header better */
+            flex: 3;
+            padding: 0; 
             max-width: 1200px;
         }
         
@@ -76,7 +74,7 @@
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
             gap: 20px; 
-            padding: 0 20px 25px 20px; /* Add padding here instead */
+            padding: 0 20px 25px 20px;
         }
 
         .product-card {
@@ -88,12 +86,22 @@
             box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
         }
 
+        img {
+            max-width: 100%;
+            height: auto;
+        }
+        
+        .product-image-link {
+            display: block;
+            cursor: zoom-in; /* Indicate that the image can be enlarged */
+        }
+        
         .product-image {
             width: 100%;
             height: 160px; 
             margin-bottom: 8px;
             border-radius: 4px;
-            object-fit: cover; 
+            object-fit: cover;
             background-color: #f0f0f0;
         }
 
@@ -103,6 +111,35 @@
             margin-bottom: 3px;
             line-height: 1.3;
         }
+        
+        /* Style for the product description */
+        .product-description {
+            font-size: 0.85em;
+            color: #666;
+            margin-bottom: 8px;
+            height: 1.2em;
+            overflow: hidden;
+            white-space: nowrap;
+            text-overflow: ellipsis;
+        }
+        
+        /* --- Stock Availability Styles (NEW) --- */
+        .product-stock {
+            font-size: 0.9em;
+            font-weight: bold;
+            margin-bottom: 5px;
+            color: #008000; /* Green for healthy stock */
+        }
+
+        .low-stock {
+            color: var(--secondary-color); /* Orange/Red for low stock warning */
+        }
+
+        .out-of-stock {
+            color: var(--primary-color); /* Red for sold out */
+        }
+        /* --- End Stock Styles --- */
+
 
         .product-price {
             font-size: 1.1em;
@@ -125,6 +162,11 @@
         .add-to-cart-btn:hover {
             background-color: #e05c00;
         }
+        .add-to-cart-btn:disabled {
+            background-color: #ccc;
+            cursor: not-allowed;
+        }
+
 
         /* --- Cart Sidebar --- */
         .cart-sidebar {
@@ -189,9 +231,62 @@
             cursor: pointer;
         }
         
-        /* --- Utility Classes --- */
-        .text-muted {
-            color: #6c757d;
+        /* --- Modal/Lightbox Styles --- */
+        .modal {
+            display: none; /* Hidden by default */
+            position: fixed; /* Stay in place */
+            z-index: 1000; /* Sit on top */
+            padding-top: 50px; /* Location of the box */
+            left: 0;
+            top: 0;
+            width: 100%; /* Full width */
+            height: 100%; /* Full height */
+            overflow: auto; /* Enable scroll if needed */
+            background-color: rgba(0,0,0,0.9); /* Black w/ opacity */
+        }
+
+        .modal-content {
+            margin: auto;
+            display: block;
+            width: 80%;
+            max-width: 700px;
+            animation-name: zoom;
+            animation-duration: 0.6s;
+        }
+
+        .modal-caption {
+            margin: auto;
+            display: block;
+            width: 80%;
+            max-width: 700px;
+            text-align: center;
+            color: #ccc;
+            padding: 10px 0;
+            height: 50px;
+        }
+
+        /* Close Button */
+        .close {
+            position: absolute;
+            top: 15px;
+            right: 35px;
+            color: #f1f1f1;
+            font-size: 40px;
+            font-weight: bold;
+            transition: 0.3s;
+        }
+
+        .close:hover,
+        .close:focus {
+            color: var(--primary-color);
+            text-decoration: none;
+            cursor: pointer;
+        }
+
+        /* Animation */
+        @keyframes zoom {
+            from {transform: scale(0.1)} 
+            to {transform: scale(1)}
         }
         
         /* --- Responsive Adjustments --- */
@@ -240,81 +335,214 @@
                 </a>
             </header>
 
-            <h2 class="section-title">✨ Full Inventory: 20 Exquisite Pieces ✨</h2>
+            <h2 class="section-title">✨ Full Inventory: Loading... ✨</h2>
 
             <div class="product-grid" id="product-list">
                 </div>
         </div>
     </div>
     
-    <script>
-    // --- Product Data (20 Items) ---
-    // All image paths now point to the 'assets/' directory.
-    const products = [
-        { id: 1, name: "Classic Diamond Ring", price: 54999.00, img: "assets/product-1.jpg" },
-        { id: 2, name: "Black Pearl Drop Necklace", price: 8200.00, img: "assets/product-2.jpg" },
-        { id: 3, name: "14K Gold Link Bracelet", price: 2550.00, img: "assets/product-3.jpg" },
-        { id: 4, name: "Sapphire Halo Studs", price: 12100.00, img: "assets/product-4.jpg" },
-        { id: 5, name: "Antique Engraved Locket", price: 4150.00, img: "assets/product-5.jpg" },
-        { id: 6, name: "Crimson Ruby Heart Pendant", price: 17300.00, img: "assets/product-6.jpg" },
-        { id: 7, name: "Personalized Copper Bangle", price: 4900.00, img: "assets/product-7.jpg" },
-        { id: 8, name: "Celestial Star Chain Cuff", price: 1375.00, img: "assets/product-8.jpg" },
-        { id: 9, name: "Emerald Cut Earring", price: 9500.00, img: "assets/product-9.jpg" },
-        { id: 10, name: "Silver Herringbone Chain", price: 1800.00, img: "assets/product-10.jpg" },
-        { id: 11, name: "Rose Gold Infinity Band", price: 6200.00, img: "assets/product-11.jpg" },
-        { id: 12, name: "Aquamarine Cluster Ring", price: 11500.00, img: "assets/product-12.jpg" },
-        { id: 13, name: "Vintage Cameo Brooch", price: 3400.00, img: "assets/product-13.jpg" },
-        { id: 14, name: "Diamond Tennis Bracelet", price: 35000.00, img: "assets/product-14.jpg" },
-        { id: 15, name: "Opal and Moonstone Ring", price: 7800.00, img: "assets/product-15.jpg" },
-        { id: 16, name: "Heavy Silver Cuban Chain", price: 5100.00, img: "assets/product-16.jpg" },
-        { id: 17, name: "Yellow Sapphire Studs", price: 10500.00, img: "assets/product-17.jpg" },
-        { id: 18, name: "Delicate Anklet Chain", price: 950.00, img: "assets/product-18.jpg" },
-        { id: 19, name: "Two-Tone Wedding Set", price: 72000.00, img: "assets/product-19.jpg" },
-        { id: 20, name: "Garnet Birthstone Pendant", price: 3100.00, img: "assets/product-20.jpg" }
-    ];
+    <div id="imageModal" class="modal">
+        <span class="close">&times;</span>
+        <img class="modal-content" id="modalImage">
+        <div id="modalCaption" class="modal-caption"></div>
+    </div>
+ <script>
+    // --- Configuration ---
+    const API_BASE_URL = 'http://localhost:5000/api';
+
+    // ⭐ IMPORTANT: REPLACE THIS MOCK ID with the ID of the currently logged-in customer. 
+    // This ID is REQUIRED for all cart operations.
+    const CURRENT_USER_ID = '60c72b8f9e67a0001f8d4e92'; 
 
     // --- State and Element References ---
-    let cart = JSON.parse(localStorage.getItem('everglowCart')) || []; 
+    let allProducts = []; 
+    let userCart = [];    
+
     const cartItemsContainer = document.getElementById('cart-items');
     const cartTotalDisplay = document.getElementById('cart-total');
     const checkoutBtn = document.getElementById('checkout-btn');
     const emptyCartMessage = document.getElementById('empty-cart-message');
+    const productList = document.getElementById('product-list');
+    const sectionTitle = document.querySelector('.section-title');
+
+    // MODAL REFERENCES (Keep existing)
+    const modal = document.getElementById('imageModal');
+    const modalImg = document.getElementById('modalImage');
+    const modalCaption = document.getElementById('modalCaption');
+    const closeBtn = document.querySelector('.close');
+
 
     // --- Utility Functions ---
-
-    // Helper to format currency (Philippine Peso)
     const formatCurrency = (amount) => {
         return `₱${amount.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
     };
     
-    // --- Core Functions ---
+    window.openModal = function(imageUrl, name) {
+        modal.style.display = "block";
+        modalImg.src = imageUrl;
+        modalCaption.innerHTML = name;
+    }
+
+    closeBtn.onclick = function() {
+        modal.style.display = "none";
+    }
+
+    window.onclick = function(event) {
+        if (event.target == modal) {
+            modal.style.display = "none";
+        }
+    }
+
+
+    // =======================================================
+    // --- DATABASE API CALLS ---
+    // =======================================================
+
+    async function fetchProducts() {
+        try {
+            sectionTitle.textContent = "✨ Full Inventory: Fetching Data... ✨";
+            const response = await fetch(`${API_BASE_URL}/products`);
+            if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+            allProducts = await response.json(); 
+            return allProducts;
+        } catch (error) {
+            console.error("Error fetching products:", error);
+            productList.innerHTML = `<p style="text-align: center; color: var(--primary-color); padding: 20px;">
+                ❌ Could not connect to the inventory server. Please ensure the Express server is running on port 5000.
+            </p>`;
+            sectionTitle.textContent = "⚠️ Inventory Offline";
+            return [];
+        }
+    }
+    
+    async function fetchCart() {
+        if (!CURRENT_USER_ID) {
+            console.error("User ID not available. Cannot fetch cart.");
+            userCart = [];
+            return;
+        }
+        try {
+            const response = await fetch(`${API_BASE_URL}/cart/${CURRENT_USER_ID}`);
+            if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+            userCart = await response.json(); 
+        } catch (error) {
+            console.error("Error fetching user cart:", error);
+            userCart = [];
+        }
+    }
+
+    async function updateProductStock(productId, newStock) {
+        try {
+            const response = await fetch(`${API_BASE_URL}/products/${productId}/stock`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ stock: newStock }),
+            });
+            if (!response.ok) {
+                const errorData = await response.json().catch(() => ({ message: "Stock update failed (non-JSON error)." }));
+                throw new Error(errorData.message || `Failed to update stock for ${productId}. Status: ${response.status}`);
+            }
+            return await response.json(); 
+        } catch (error) {
+            console.error("Stock update error:", error);
+            alert("Warning: Failed to update product stock on the server: " + error.message);
+            return null;
+        }
+    }
+    
+    async function updateCartDB(productId, quantityChange) {
+        if (!CURRENT_USER_ID) {
+             alert("Please log in to add items to the cart.");
+             return null;
+        }
+        try {
+            const response = await fetch(`${API_BASE_URL}/cart`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ userId: CURRENT_USER_ID, productId, quantityChange }),
+            });
+            
+            if (!response.ok) {
+                const errorData = await response.json().catch(() => ({ message: "Cart update failed (non-JSON error)." }));
+                throw new Error(errorData.message || `Failed to update cart. Status: ${response.status}`);
+            }
+            return await response.json();
+        } catch (error) {
+            console.error("Cart DB update error:", error);
+            alert("Error updating cart database: " + error.message);
+            return null;
+        }
+    }
+
+
+    // =======================================================
+    // --- CORE UI/LOGIC FUNCTIONS ---
+    // =======================================================
 
     function renderProducts() {
-        const productList = document.getElementById('product-list');
-        productList.innerHTML = products.map(p => `
-            <div class="product-card">
-                <img src="${p.img}" alt="${p.name}" class="product-image">
-                <h3 class="product-title">${p.name}</h3>
-                <p class="product-price">${formatCurrency(p.price)}</p>
-                <button class="add-to-cart-btn" onclick="addToCart(${p.id})">
-                    <i class="fas fa-plus"></i> Add to Cart
-                </button>
-            </div>
-        `).join('');
+        sectionTitle.innerHTML = `✨ Full Inventory: ${allProducts.length} Exquisite Pieces ✨`;
+
+        productList.innerHTML = allProducts.map(p => {
+            const totalStock = p.stock;
+            
+            let stockClass = 'product-stock';
+            let stockText = `${totalStock} in stock`;
+            let buttonDisabled = false;
+
+            if (totalStock <= 0) {
+                stockClass += ' out-of-stock';
+                stockText = 'Sold Out! 😔';
+                buttonDisabled = true;
+            } else if (totalStock > 0 && totalStock <= 5) {
+                stockClass += ' low-stock';
+                stockText = `Only ${totalStock} left!`;
+            }
+            
+            return `
+                <div class="product-card">
+                    <a href="javascript:void(0)" 
+                        onclick="openModal('${p.imageUrl}', '${p.name}')" 
+                        class="product-image-link">
+                        <img src="${p.imageUrl}" alt="${p.name}" class="product-image">
+                    </a>
+                    
+                    <h3 class="product-title">${p.name}</h3>
+                    
+                    <p class="product-description">${p.description || 'No description available.'}</p>
+                    
+                    <p class="${stockClass}" id="stock-${p._id}">${stockText}</p>
+
+                    <p class="product-price">${formatCurrency(p.price)}</p>
+                    
+                    <button 
+                        class="add-to-cart-btn" 
+                        id="btn-${p._id}"
+                        data-product-id="${p._id}" 
+                        data-product-name="${p.name}" 
+                        data-product-price="${p.price}"
+                        ${buttonDisabled ? 'disabled' : ''}
+                        title="${buttonDisabled ? 'This item is out of stock' : 'Add to Cart'}"
+                    >
+                        <i class="fas fa-plus"></i> ${buttonDisabled ? 'Sold Out' : 'Add to Cart'}
+                    </button>
+                </div>
+            `;
+        }).join('');
     }
 
     function renderCart() {
         cartItemsContainer.innerHTML = '';
         let total = 0;
 
-        if (cart.length === 0) {
+        if (userCart.length === 0) {
             emptyCartMessage.style.display = 'block';
             checkoutBtn.disabled = true;
         } else {
             emptyCartMessage.style.display = 'none';
             checkoutBtn.disabled = false;
             
-            cart.forEach((item, index) => {
+            userCart.forEach((item) => {
                 const itemTotal = item.price * item.quantity;
                 total += itemTotal;
                 
@@ -324,7 +552,7 @@
                     <span>${item.name} (${item.quantity})</span>
                     <div>
                         <span>${formatCurrency(itemTotal)}</span>
-                        <button onclick="deleteItem(${index})" title="Remove item">
+                        <button onclick="deleteItem('${item.id}')" title="Remove all of this item">
                             <i class="fas fa-trash-alt"></i>
                         </button>
                     </div>
@@ -334,47 +562,188 @@
         }
 
         cartTotalDisplay.textContent = formatCurrency(total);
-        localStorage.setItem('everglowCart', JSON.stringify(cart));
     }
 
-    function addToCart(productId) {
-        const product = products.find(p => p.id === productId);
-        const cartItem = cart.find(item => item.id === productId);
+    function updateProductCardUI(product) {
+        const stockElement = document.getElementById(`stock-${product._id}`);
+        const buttonElement = document.getElementById(`btn-${product._id}`);
 
-        if (cartItem) {
-            cartItem.quantity += 1;
-        } else {
-            cart.push({ ...product, quantity: 1 }); 
+        if (!stockElement || !buttonElement) return;
+
+        let stockClass = 'product-stock';
+        let stockText = `${product.stock} in stock`;
+        let buttonDisabled = false;
+        let buttonText = '<i class="fas fa-plus"></i> Add to Cart';
+        let buttonTitle = 'Add to Cart';
+
+        if (product.stock <= 0) {
+            stockClass += ' out-of-stock';
+            stockText = 'Sold Out! 😔';
+            buttonDisabled = true;
+            buttonText = '<i class="fas fa-plus"></i> Sold Out';
+            buttonTitle = 'This item is out of stock';
+        } else if (product.stock > 0 && product.stock <= 5) {
+            stockClass += ' low-stock';
+            stockText = `Only ${product.stock} left!`;
+        }
+        
+        stockElement.className = stockClass;
+        stockElement.textContent = stockText;
+        buttonElement.disabled = buttonDisabled;
+        buttonElement.innerHTML = buttonText;
+        buttonElement.title = buttonTitle;
+    }
+
+
+    async function addToCart(productId) {
+        if (!CURRENT_USER_ID) {
+            alert("Please log in to add items to the cart.");
+            return;
+        }
+        
+        const productIndex = allProducts.findIndex(p => p._id === productId);
+        if (productIndex === -1) return;
+        
+        let product = allProducts[productIndex];
+        const availableStock = product.stock;
+
+        if (availableStock <= 0) {
+            alert(`Cannot add more. ${product.name} is currently out of stock.`);
+            return;
         }
 
-        renderCart();
-        console.log(`${product.name} added to cart!`);
-    }
+        const button = document.getElementById(`btn-${productId}`);
+        if(button) button.disabled = true;
+        const newStock = availableStock - 1;
 
-    function deleteItem(index) {
-        const itemName = cart[index].name;
-        cart.splice(index, 1); 
-        renderCart();
-        console.log(`${itemName} removed from cart.`);
-    }
+        // 1. Update Cart DB (quantityChange: 1)
+        const cartResponse = await updateCartDB(productId, 1);
 
-    function checkout() {
-        if (cart.length > 0) {
-            // Redirect to payment page
-            window.location.href = 'payment.html';
-        } else {
+        if (cartResponse) {
+            // 2. If Cart DB update succeeded, update Product Stock DB
+            const stockResponse = await updateProductStock(productId, newStock);
+
+            if (stockResponse) {
+                // 3. If BOTH succeeded, update local state and UI
+                product.stock = newStock; 
+                
+                await fetchCart(); // Re-fetch the cart to sync local 'userCart' array with DB
+                
+                updateProductCardUI(product);
+                renderCart();
+                console.log(`${product.name} added to cart! New stock: ${newStock}`);
+            } else {
+                // Critical Error: Stock failed but Cart succeeded. Rollback Cart.
+                await updateCartDB(productId, -1); 
+                await fetchCart();
+                renderCart();
+                alert("Critical Error: Failed to reserve stock. Cart transaction rolled back.");
+            }
+        }
+        
+        // 4. Re-enable button
+        if(button && product.stock > 0) button.disabled = false;
+    }
+    
+    // ⭐ FINAL FIX: Delete Item (Removes ALL quantity of a specific product from cart)
+    async function deleteItem(productId) {
+        if (!CURRENT_USER_ID) return;
+        
+        const itemToRemove = userCart.find(i => i.id === productId);
+        if (!itemToRemove) return;
+        const quantityInCart = itemToRemove.quantity;
+
+        // 1. Call backend route to remove the item entry entirely
+        try {
+            const deleteResponse = await fetch(`${API_BASE_URL}/cart/fullremove/${CURRENT_USER_ID}/${productId}`, { 
+                 method: 'DELETE'
+            });
+
+            if (!deleteResponse.ok) {
+                 throw new Error(`Cart removal failed with status ${deleteResponse.status}.`);
+            }
+            
+            // 2. The backend deleted the item. Now restore the stock.
+            const productIndex = allProducts.findIndex(p => p._id === productId);
+            if (productIndex === -1) return;
+            
+            let product = allProducts[productIndex];
+            const newStock = product.stock + quantityInCart;
+            
+            // 3. Update Product Stock DB (restore the stock)
+            const stockResponse = await updateProductStock(productId, newStock);
+
+            if (stockResponse) {
+                // 4. Update local state and UI
+                product.stock = newStock; 
+            }
+
+            // 5. Final UI Sync
+            await fetchCart(); 
+            updateProductCardUI(product);
+            renderCart();
+            console.log(`Product ${productId} fully removed. Stock restored by ${quantityInCart}.`);
+            
+        } catch (error) {
+             console.error("Delete failed:", error);
+             alert("Failed to remove item from cart: " + error.message);
+        }
+    }
+    
+    // Checkout (Clears DB cart)
+    async function checkout() {
+        if (!CURRENT_USER_ID) {
+            alert("Please log in to checkout.");
+            return;
+        }
+
+        if (userCart.length === 0) {
             alert("Your cart is empty! Don't deny yourself a little sparkle.");
+            return;
+        }
+        
+        alert("Processing payment and finalizing order...");
+        
+        // 1. Clear Cart in DB
+        try {
+             const response = await fetch(`${API_BASE_URL}/cart/${CURRENT_USER_ID}`, { method: 'DELETE' });
+             if (!response.ok) throw new Error("Failed to clear cart after successful payment.");
+             
+             // 2. Update UI
+             userCart = [];
+             renderCart();
+             
+             alert("Order successful! Thank you for your purchase!");
+             window.location.href = "payment.html"; 
+             
+        } catch (error) {
+            console.error("Checkout failed:", error);
+            alert("Checkout failed. Please try again or contact support.");
         }
     }
 
-    // --- Global Functions (Needed because they are called from inline HTML) ---
-    window.addToCart = addToCart;
-    window.deleteItem = deleteItem;
 
-    // --- Event Listeners and Initial Load ---
+    // --- Global Functions and Event Listeners ---
+    window.deleteItem = deleteItem;
+    window.openModal = openModal; 
+
     checkoutBtn.addEventListener('click', checkout);
     
-    window.onload = () => {
+    productList.addEventListener('click', (event) => {
+        const button = event.target.closest('.add-to-cart-btn');
+        
+        if (button && !button.disabled) {
+            const id = button.dataset.productId;
+            addToCart(id);
+        }
+    });
+    
+    window.onload = async () => {
+        if (CURRENT_USER_ID === '60c72b8f9e67a0001f8d4e92') {
+             console.warn("⚠️ WARNING: Please replace the CURRENT_USER_ID with an actual user ID from your database.");
+        }
+        await fetchProducts();
+        await fetchCart(); 
         renderProducts();
         renderCart();
     };
