@@ -17,7 +17,7 @@ const corsOptions = {
 app.use(cors(corsOptions));
 app.use(express.json());
 
-// --- MongoDB Connection ---
+// MongoDB Connection
 mongoose.connect("mongodb+srv://sheenacan03:sheyn110903@cluster0.sj3w4az.mongodb.net/?appName=Cluster0")
 .then(() => {
     console.log("✅ MongoDB connected successfully!");
@@ -28,19 +28,19 @@ mongoose.connect("mongodb+srv://sheenacan03:sheyn110903@cluster0.sj3w4az.mongodb
 });
 
 // =======================================================
-// --- Schemas & Models (No changes needed here) ---
+// --- Schemas & Models ---
 // =======================================================
 
-// User Schema and Model
+// User Schema & Model
 const UserSchema = new mongoose.Schema({
     name: { type: String, required: true },
     email: { type: String, required: true, unique: true },
-    password: { type: String, required: true }, 
+    password: { type: String, required: true },
     role: { type: String, enum: ['customer', 'admin'], default: 'customer' }
 });
 const User = mongoose.model("User", UserSchema);
 
-// Product Schema and Model
+// Product Schema & Model
 const ProductSchema = new mongoose.Schema({
     name: { type: String, required: true, trim: true },
     description: { type: String, trim: true },
@@ -51,284 +51,373 @@ const ProductSchema = new mongoose.Schema({
 }, { timestamps: true });
 const Product = mongoose.model("Product", ProductSchema);
 
-// CartItem Schema and Model
+
+// Cart Item Schema & Model
 const CartItemSchema = new mongoose.Schema({
-    userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
-    productId: { type: mongoose.Schema.Types.ObjectId, ref: 'Product', required: true },
-    quantity: { type: Number, required: true, min: 1 },
+    userId: { 
+        type: mongoose.Schema.Types.ObjectId, 
+        ref: 'User', 
+        required: true 
+    },
+    productId: { 
+        type: mongoose.Schema.Types.ObjectId, 
+        ref: 'Product', 
+        required: true 
+    },
+    quantity: { 
+        type: Number, 
+        required: true, 
+        min: 1 
+    },
 }, { timestamps: true });
 
 CartItemSchema.index({ userId: 1, productId: 1 }, { unique: true });
+
 const CartItem = mongoose.model("CartItem", CartItemSchema);
 
 
 // =======================================================
-// --- API Routes with Fixes --- 
+// --- API Routes for User Management (1-6) ---
 // =======================================================
 
-// --- User Routes (No changes) ---
+// 1. Admin Initial Setup (POST)
+app.post("/api/admin/setup", async (req, res) => {
+    try {
+        const { name, email, password } = req.body;
+        const adminExists = await User.findOne({ role: 'admin' });
+        if (adminExists) {
+            return res.status(403).json({ message: "Admin user already exists. Setup blocked." });
+        }
+        const newAdmin = new User({ name, email, password, role: 'admin' });
+        await newAdmin.save();
+        res.status(201).json({ message: "Admin user created successfully!", user: newAdmin });
+    } catch (err) {
+        res.status(500).json({ error: "Failed to create admin", details: err.message });
+    }
+});
+
+// 2. Customer Sign-Up (Create - POST)
 app.post("/api/register", async (req, res) => {
+    const { name, email, password } = req.body;
+    if (!name || !email || !password) {
+        return res.status(400).json({ message: "Missing required fields (name, email, password)." });
+    }
     try {
-        const { name, email, password, role } = req.body;
-        if (await User.findOne({ email })) {
-            return res.status(400).json({ message: "User with this email already exists." });
-        }
-        const newUser = new User({ name, email, password, role });
+        const newUser = new User({ name, email, password, role: 'customer' });
         await newUser.save();
-        res.status(201).json({ message: "User registered successfully!", user: { _id: newUser._id, name: newUser.name, email: newUser.email, role: newUser.role } });
-    } catch (error) {
-        res.status(500).json({ message: "Error registering user", error: error.message });
-    }
-});
-
-app.post("/api/login", async (req, res) => {
-    try {
-        const { email, password } = req.body;
-        const user = await User.findOne({ email, password }); 
-        if (!user) {
-            return res.status(401).json({ message: "Invalid credentials" });
+        res.status(201).json({ id: newUser._id, name: newUser.name, email: newUser.email });
+    } catch (err) {
+        if (err.code === 11000) { 
+            return res.status(409).json({ message: "This email address is already registered." });
         }
-        res.status(200).json({ message: "Login successful", user: { _id: user._id, name: user.name, email: user.email, role: user.role } });
-    } catch (error) {
-        res.status(500).json({ message: "Error during login", error: error.message });
+        res.status(500).json({ error: "Failed to create user account", details: err.message });
     }
 });
 
+// 3. Admin Login (POST)
+app.post("/api/admin/login", async (req, res) => {
+    const { email, password } = req.body;
+    try {
+        const user = await User.findOne({ email, role: 'admin' });
+
+        if (!user || user.password !== password) {
+            return res.status(401).json({ message: "Invalid credentials or not an admin." });
+        }
+        res.json({ message: "Admin login successful", user: { id: user._id, name: user.name } });
+    } catch (err) {
+        res.status(500).json({ error: "Login failed", details: err.message });
+    }
+});
+
+// 4. READ All Users (GET)
 app.get("/api/users", async (req, res) => {
     try {
-        const users = await User.find().select('-password');
-        res.status(200).json(users);
-    } catch (error) {
-        res.status(500).json({ message: "Error fetching users", error: error.message });
+        const users = await User.find().select('-password -__v');
+        res.json(users);
+    } catch (err) {
+        res.status(500).json({ error: "Failed to fetch user data", details: err.message });
     }
 });
 
-// --- Product Routes (Standard CRUD) ---
-app.post("/api/products", async (req, res) => {
+// 5. UPDATE User (PUT)
+app.put("/api/users/:id", async (req, res) => {
+    const { id } = req.params;
+    const { name, email, role } = req.body; 
+    
+    if (!ObjectId.isValid(id)) {
+        return res.status(400).json({ message: "Invalid User ID format." });
+    }
+
     try {
-        const newProduct = new Product(req.body);
+        const updatedUser = await User.findByIdAndUpdate(
+            id,
+            { name, email, role },
+            { new: true, runValidators: true }
+        ).select('-password -__v');
+        
+        if (!updatedUser) {
+            return res.status(404).json({ message: "User not found." });
+        }
+        
+        res.json(updatedUser);
+    } catch (err) {
+        if (err.code === 11000) { 
+            return res.status(409).json({ message: "Email already exists." });
+        }
+        res.status(500).json({ error: "Failed to update user", details: err.message });
+    }
+});
+
+// 6. DELETE User (DELETE)
+app.delete("/api/users/:id", async (req, res) => {
+    const { id } = req.params;
+
+    if (!ObjectId.isValid(id)) {
+        return res.status(400).json({ message: "Invalid User ID format." });
+    }
+    
+    try {
+        const deletedUser = await User.findByIdAndDelete(id);
+
+        if (!deletedUser) {
+            return res.status(404).json({ message: "User not found." });
+        }
+        res.status(200).json({ message: "User deleted successfully", id });
+    } catch (err) {
+        res.status(500).json({ error: "Failed to delete user", details: err.message });
+    }
+});
+
+// =======================================================
+// --- API Routes for Product Management (7-11) ---
+// =======================================================
+
+// 7. CREATE Product (POST) - Admin Only
+app.post("/api/products", async (req, res) => {
+    const { name, description, price, imageUrl, stock, category } = req.body;
+    try {
+        const newProduct = new Product({ name, description, price, imageUrl, stock, category });
         await newProduct.save();
         res.status(201).json(newProduct);
-    } catch (error) {
-        res.status(400).json({ message: "Error creating product", error: error.message });
+    } catch (err) {
+        res.status(400).json({ error: "Failed to create product", details: err.message });
     }
 });
 
+// 8. READ All Products (GET) - Public/Customer view
 app.get("/api/products", async (req, res) => {
     try {
-        const products = await Product.find().sort({ createdAt: -1 });
-        res.status(200).json(products);
-    } catch (error) {
-        res.status(500).json({ message: "Error fetching products", error: error.message });
+        const products = await Product.find({}).select('-__v'); 
+        res.json(products);
+    } catch (err) {
+        res.status(500).json({ error: "Failed to fetch products", details: err.message });
     }
 });
 
-app.get("/api/products/:id", async (req, res) => {
-    try {
-        const product = await Product.findById(req.params.id);
-        if (!product) {
-            return res.status(404).json({ message: "Product not found" });
-        }
-        res.status(200).json(product);
-    } catch (error) {
-        if (error.name === 'CastError') {
-            return res.status(400).json({ message: "Invalid product ID format" });
-        }
-        res.status(500).json({ message: "Error fetching product", error: error.message });
-    }
-});
-
+// 9. UPDATE Product (PUT) - Admin Only (General update)
 app.put("/api/products/:id", async (req, res) => {
+    const { id } = req.params;
+    const updateData = req.body; 
+
+    if (!ObjectId.isValid(id)) {
+        return res.status(400).json({ message: "Invalid Product ID format." });
+    }
+
     try {
         const updatedProduct = await Product.findByIdAndUpdate(
-            req.params.id,
-            req.body,
+            id,
+            updateData,
             { new: true, runValidators: true }
-        );
+        ).select('-__v');
+
         if (!updatedProduct) {
-            return res.status(404).json({ message: "Product not found" });
+            return res.status(404).json({ message: "Product not found." });
         }
-        res.status(200).json(updatedProduct);
-    } catch (error) {
-        if (error.name === 'CastError') {
-            return res.status(400).json({ message: "Invalid product ID format" });
-        }
-        res.status(400).json({ message: "Error updating product", error: error.message });
+        res.json(updatedProduct);
+    } catch (err) {
+        res.status(400).json({ error: "Failed to update product", details: err.message });
     }
 });
 
+// 10. DELETE Product (DELETE) - Admin Only
 app.delete("/api/products/:id", async (req, res) => {
+    const { id } = req.params;
+
+    if (!ObjectId.isValid(id)) {
+        return res.status(400).json({ message: "Invalid Product ID format." });
+    }
+
     try {
-        const deletedProduct = await Product.findByIdAndDelete(req.params.id);
+        const deletedProduct = await Product.findByIdAndDelete(id);
+
         if (!deletedProduct) {
-            return res.status(404).json({ message: "Product not found" });
+            return res.status(404).json({ message: "Product not found." });
         }
-        await CartItem.deleteMany({ productId: req.params.id });
-        res.status(200).json({ message: "Product and associated cart items deleted successfully" });
-    } catch (error) {
-        if (error.name === 'CastError') {
-            return res.status(400).json({ message: "Invalid product ID format" });
-        }
-        res.status(500).json({ message: "Error deleting product", error: error.message });
+        res.status(200).json({ message: "Product deleted successfully", id });
+    } catch (err) {
+        res.status(500).json({ error: "Failed to delete product", details: err.message });
     }
 });
 
-app.get("/api/products/category/:category", async (req, res) => {
-    try {
-        const category = req.params.category;
-        const products = await Product.find({ category: { $regex: new RegExp(category, 'i') } });
-        res.status(200).json(products);
-    } catch (error) {
-        res.status(500).json({ message: "Error fetching products by category", error: error.message });
+// 11. UPDATE Product Stock (PUT) - CRITICAL for stock management
+app.put("/api/products/:id/stock", async (req, res) => {
+    const { id } = req.params;
+    const { stock } = req.body; 
+
+    if (!ObjectId.isValid(id)) {
+        return res.status(400).json({ message: "Invalid Product ID format." });
     }
-});
+    if (typeof stock !== 'number' || stock < 0) {
+         return res.status(400).json({ message: "Invalid stock value provided. Stock must be a non-negative number." });
+    }
 
-// ⭐ FIX: ADDED MISSING ROUTE for updating stock (Required for frontend logic)
-app.put("/api/products/:productId/stock", async (req, res) => {
     try {
-        const { stock } = req.body;
-        
-        // Ensure the new stock value is a valid non-negative number
-        if (typeof stock !== 'number' || stock < 0) {
-            return res.status(400).json({ message: "Invalid stock value provided." });
-        }
-
         const updatedProduct = await Product.findByIdAndUpdate(
-            req.params.productId,
+            id,
             { stock: stock },
             { new: true, runValidators: true }
-        );
+        ).select('-__v');
 
         if (!updatedProduct) {
-            return res.status(404).json({ message: "Product not found" });
+            return res.status(404).json({ message: "Product not found." });
         }
-        res.status(200).json(updatedProduct);
-    } catch (error) {
-        if (error.name === 'CastError') {
-            return res.status(400).json({ message: "Invalid product ID format" });
-        }
-        // This 500 status often occurred in the original implementation
-        res.status(500).json({ message: "Error updating product stock", error: error.message });
+        res.json(updatedProduct); 
+    } catch (err) {
+        console.error("Stock update failed:", err);
+        res.status(500).json({ 
+            error: "Failed to update product stock", 
+            details: err.message 
+        });
     }
 });
 
 
-// --- Cart Routes (CRITICAL FIXES HERE) ---
+// =======================================================
+// --- API Routes for Cart Management (12-15) ---
+// =======================================================
 
-// 10. POST /api/cartitems - Add a product to the user's cart or update quantity
-// ⭐ FIX: Updated logic to correctly use 'quantityChange' (+1 or -1) from the frontend
-app.post("/api/cartitems", async (req, res) => {
+// 12. GET User's Cart (READ)
+app.get("/api/cart/:userId", async (req, res) => {
+    const { userId } = req.params;
+
+    if (!ObjectId.isValid(userId)) {
+        return res.status(400).json({ message: "Invalid User ID format." });
+    }
+
     try {
-        const { userId, productId, quantityChange } = req.body; 
+        const cartItems = await CartItem.find({ userId })
+            .populate('productId', 'name price stock imageUrl');
 
-        // Validate required fields
-        if (!userId || !productId || typeof quantityChange !== 'number') {
-            return res.status(400).json({ message: "Missing or invalid required cart fields (userId, productId, quantityChange)." });
-        }
+        const formattedCart = cartItems.map(item => ({
+            id: item.productId._id,
+            name: item.productId.name,
+            price: item.productId.price,
+            imageUrl: item.productId.imageUrl,
+            availableStock: item.productId.stock, 
+            quantity: item.quantity
+        }));
 
-        // Find the existing cart item
+        res.json(formattedCart);
+    } catch (err) {
+        console.error("Failed to fetch cart items:", err);
+        res.status(500).json({ error: "Failed to fetch cart items", details: err.message });
+    }
+});
+
+
+// 13. ADD/UPDATE Item in Cart (+1 or -1) - Used by the 'Add to Cart' button
+app.post("/api/cart", async (req, res) => {
+    const { userId, productId, quantityChange } = req.body; 
+
+    if (!ObjectId.isValid(userId) || !ObjectId.isValid(productId)) {
+        return res.status(400).json({ message: "Invalid ID format." });
+    }
+    if (typeof quantityChange !== 'number' || Math.abs(quantityChange) !== 1) {
+         return res.status(400).json({ message: "Invalid quantity change. Must be +1 or -1." });
+    }
+
+    try {
         let cartItem = await CartItem.findOne({ userId, productId });
 
         if (cartItem) {
-            // Item exists, update quantity
-            cartItem.quantity += quantityChange;
+            const newQuantity = cartItem.quantity + quantityChange;
             
-            // CRITICAL CHECK: If quantity drops to 0 or below, delete the entry
-            if (cartItem.quantity <= 0) {
-                await CartItem.deleteOne({ _id: cartItem._id });
-                return res.status(200).json({ message: "Cart item removed successfully (quantity reached zero)", cartItem: null });
+            if (newQuantity <= 0) {
+                 await CartItem.findByIdAndDelete(cartItem._id);
+                 return res.status(200).json({ message: "Item removed from cart.", quantity: 0 });
             }
-
+            
+            cartItem.quantity = newQuantity;
             await cartItem.save();
-            res.status(200).json({ message: "Cart item quantity updated", cartItem });
+
         } else if (quantityChange > 0) {
-            // Item does not exist, create new (only if adding)
-            cartItem = new CartItem({ userId, productId, quantity: quantityChange });
+            cartItem = new CartItem({ userId, productId, quantity: 1 });
             await cartItem.save();
-            res.status(201).json({ message: "Product added to cart", cartItem });
         } else {
-            // Attempted to remove an item that wasn't in the cart
-            res.status(404).json({ message: "Cannot remove item: Product not found in cart." });
+            return res.status(404).json({ message: "Cart item not found to decrement." });
         }
-
-    } catch (error) {
-        // This is the error seen in the frontend: "Error adding/updating cart item"
-        res.status(500).json({ message: "Error adding/updating cart item", error: error.message });
-    }
-});
-
-// 11. GET /api/cartitems/:userId - Get the entire cart for a specific user
-// ⭐ FIX: Uses aggregation/populate and formats the response structure for the frontend
-app.get("/api/cartitems/:userId", async (req, res) => {
-    try {
-        const cartItems = await CartItem.find({ userId: req.params.userId })
-            .populate('productId'); 
         
-        // ⭐ CRITICAL FIX: Map the database objects into the simple structure the frontend expects
-        const formattedCart = cartItems.map(item => ({
-            id: item.productId._id, // Product ID is used as the unique identifier for UI manipulation
-            name: item.productId.name,
-            price: item.productId.price,
-            quantity: item.quantity,
-            cartItemId: item._id // The actual CartItem ID
-        }));
-        res.status(200).json(formattedCart);
-    } catch (error) {
-        if (error.name === 'CastError') {
-            return res.status(400).json({ message: "Invalid user ID format" });
-        }
-        res.status(500).json({ message: "Error fetching cart", error: error.message });
-    }
-});
+        const populatedItem = await CartItem.findOne({ userId, productId })
+            .populate('productId', 'name price stock');
 
-// ⭐ FIX: ADDED NEW ROUTE to fully remove an item by ProductId and UserId
-// This is required for your `deleteItem(productId)` function in the frontend
-app.delete("/api/cartitems/fullremove/:userId/:productId", async (req, res) => {
-    try {
-        const { userId, productId } = req.params;
-        
-        const result = await CartItem.findOneAndDelete({
-            userId: userId,
-            productId: productId
+        res.status(200).json({ 
+            message: "Cart updated successfully", 
+            item: populatedItem ? { 
+                id: populatedItem.productId._id,
+                name: populatedItem.productId.name,
+                quantity: populatedItem.quantity
+            } : null
         });
 
-        if (!result) {
-            return res.status(404).json({ message: "Cart item not found for this user/product combination." });
-        }
-
-        res.status(200).json({ message: "Cart item fully removed successfully.", deletedItem: result });
-
-    } catch (error) {
-        if (error.name === 'CastError') {
-            return res.status(400).json({ message: "Invalid ID format" });
-        }
-        res.status(500).json({ message: "Error removing cart item.", error: error.message });
+    } catch (err) {
+        console.error("Failed to update cart:", err);
+        res.status(500).json({ error: "Failed to update cart", details: err.message });
     }
 });
 
 
-// 14. DELETE /api/cartitems/:userId - Clear all items from a user's cart (Used for checkout)
-app.delete("/api/cartitems/:userId", async (req, res) => {
+// 14. CLEAR User's Entire Cart (DELETE) - Used for checkout
+app.delete("/api/cart/:userId", async (req, res) => {
+    const { userId } = req.params;
+
+    if (!ObjectId.isValid(userId)) {
+        return res.status(400).json({ message: "Invalid User ID format." });
+    }
+
     try {
-        const result = await CartItem.deleteMany({ userId: req.params.userId });
-        res.status(200).json({ message: `Cleared ${result.deletedCount} items from cart.`, result });
-    } catch (error) {
-        if (error.name === 'CastError') {
-            return res.status(400).json({ message: "Invalid user ID format" });
+        await CartItem.deleteMany({ userId });
+        res.status(200).json({ message: "User cart cleared successfully." });
+    } catch (err) {
+        res.status(500).json({ error: "Failed to clear cart", details: err.message });
+    }
+});
+
+// 15. DELETE Specific Product Item Completely (NEW - Used by the 'Trash' icon)
+app.delete("/api/cart/fullremove/:userId/:productId", async (req, res) => {
+    const { userId, productId } = req.params;
+
+    if (!ObjectId.isValid(userId) || !ObjectId.isValid(productId)) {
+        return res.status(400).json({ message: "Invalid ID format." });
+    }
+
+    try {
+        const deletedItem = await CartItem.findOneAndDelete({ userId, productId });
+        
+        if (!deletedItem) {
+             return res.status(404).json({ message: "Cart item not found for removal." });
         }
-        res.status(500).json({ message: "Error clearing cart", error: error.message });
+
+        // CRITICAL: Return the quantity that was removed to restore stock
+        res.status(200).json({ 
+            message: "Product item removed entirely from cart.",
+            quantityRemoved: deletedItem.quantity 
+        });
+    } catch (err) {
+        console.error("Failed to remove item entirely:", err);
+        res.status(500).json({ error: "Failed to remove item entirely from cart", details: err.message });
     }
 });
 
 
-// 404 Not Found JSON Fallback
-app.use((req, res, next) => {
-    res.status(404).json({ 
-        message: `API endpoint not found for: ${req.originalUrl}`,
-        status: 404 
-    });
-});
-
-
-// --- Start Server ---
+// Start Server
 app.listen(PORT, () => console.log(`🚀 Server running on port ${PORT}`));
